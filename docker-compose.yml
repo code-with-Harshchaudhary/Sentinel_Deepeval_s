@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: axiomeval
+      POSTGRES_USER: axiomeval
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-dev-password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U axiomeval"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+
+  backend:
+    build: ./backend
+    environment:
+      AXIOM_DATABASE_URL: postgresql+psycopg://axiomeval:${POSTGRES_PASSWORD:-local-dev-password}@postgres:5432/axiomeval
+      AXIOM_REDIS_URL: redis://redis:6379/0
+      AXIOM_CORS_ORIGINS: http://localhost:5173,http://localhost:8080
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "8000:8000"
+
+  worker:
+    build: ./backend
+    command: rq worker --url redis://redis:6379/0 evaluations
+    environment:
+      AXIOM_DATABASE_URL: postgresql+psycopg://axiomeval:${POSTGRES_PASSWORD:-local-dev-password}@postgres:5432/axiomeval
+      AXIOM_REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  postgres-data:
+  redis-data:
