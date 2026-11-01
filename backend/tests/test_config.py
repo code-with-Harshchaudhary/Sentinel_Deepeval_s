@@ -1,7 +1,9 @@
+from configparser import ConfigParser
+
 import pytest
 from pydantic import ValidationError
 
-from app.config import Settings
+from app.config import Settings, escape_alembic_url
 
 
 def test_database_url_accepts_supabase_postgresql_scheme() -> None:
@@ -11,6 +13,19 @@ def test_database_url_accepts_supabase_postgresql_scheme() -> None:
 
     assert settings.database_url.startswith("postgresql+psycopg://")
     assert settings.database_url.endswith("?sslmode=require")
+
+
+def test_alembic_url_escapes_percent_encoded_password() -> None:
+    database_url = "postgresql+psycopg://user:password%40value@db.example.test/postgres"
+    escaped_url = escape_alembic_url(database_url)
+    parser = ConfigParser()
+    parser.add_section("alembic")
+    parser.set("alembic", "sqlalchemy.url", escaped_url)
+
+    assert escaped_url == (
+        "postgresql+psycopg://user:password%%40value@db.example.test/postgres"
+    )
+    assert parser.get("alembic", "sqlalchemy.url") == database_url
 
 
 def test_database_url_supports_render_database_url(monkeypatch: pytest.MonkeyPatch) -> None:

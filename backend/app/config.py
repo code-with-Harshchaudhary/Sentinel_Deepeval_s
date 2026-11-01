@@ -6,6 +6,11 @@ from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def escape_alembic_url(database_url: str) -> str:
+    """Escape percent signs consumed by Alembic's ConfigParser layer."""
+    return database_url.replace("%", "%%")
+
+
 class Settings(BaseSettings):
     app_name: str = "AxiomEval"
     api_prefix: str = "/api"
