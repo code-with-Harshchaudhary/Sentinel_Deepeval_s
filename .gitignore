@@ -119,9 +119,12 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Environments
+# Environments and local platform state. Only sanitized examples belong in Git.
 .env
-.env.local
+.env.*
+!.env.example
+!**/.env.example
+.vercel/
 .venv
 env/
 venv/
@@ -173,6 +176,13 @@ backend/*.db
 
 # deepeval tests
 secrets
+
+# Private keys and common cloud credential exports
+*.pem
+*.p12
+*.pfx
+credentials.json
+service-account*.json
 
 # Generated voice simulation audio (voice_simulations/ was the old default)
 .deepeval-voice-simulations/

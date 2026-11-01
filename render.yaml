@@ -1,0 +1,49 @@
+services:
+  - type: keyvalue
+    name: axiomeval-redis
+    plan: free
+    ipAllowList: []
+    maxmemoryPolicy: noeviction
+
+  - type: web
+    name: axiomeval-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install .
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: AXIOM_ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: AXIOM_REDIS_URL
+        fromService:
+          name: axiomeval-redis
+          type: keyvalue
+          property: connectionString
+      - key: AXIOM_CORS_ORIGINS
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+
+  - type: worker
+    name: axiomeval-worker
+    runtime: python
+    rootDir: backend
+    plan: 0.5c-512mb
+    buildCommand: pip install .
+    startCommand: rq worker --url "$AXIOM_REDIS_URL" evaluations
+    envVars:
+      - key: AXIOM_ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: AXIOM_REDIS_URL
+        fromService:
+          name: axiomeval-redis
+          type: keyvalue
+          property: connectionString
+      - key: OPENAI_API_KEY
+        sync: false

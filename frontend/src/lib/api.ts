@@ -1,4 +1,15 @@
-const API_BASE = import.meta.env.VITE_API_URL ?? '/api';
+function resolveApiBase(value: string | undefined): string {
+  const configured = value?.trim();
+  if (!configured) {
+    if (import.meta.env.PROD) {
+      throw new Error('VITE_API_URL must be set for a production frontend build.');
+    }
+    return '/api';
+  }
+  return configured.replace(/\/+$/, '');
+}
+
+const API_BASE = resolveApiBase(import.meta.env.VITE_API_URL);
 
 export class ApiError extends Error {
   constructor(message: string, public status: number) { super(message); }
