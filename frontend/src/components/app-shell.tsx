@@ -24,8 +24,17 @@ export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [hits, setHits] = useState<SearchHit[]>([]);
+  const [apiConnected, setApiConnected] = useState<boolean | null>(null);
+  const environmentName = import.meta.env.PROD ? 'Production environment' : 'Local environment';
+  const apiName = import.meta.env.PROD ? 'Render API' : 'API on :8000';
+  const environmentDetail = apiConnected === null ? `Checking ${apiName}…` : apiConnected ? `${apiName} connected` : `${apiName} unavailable`;
   const location = useLocation(); const navigate = useNavigate();
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    let active = true;
+    api('/health').then(() => { if (active) setApiConnected(true); }).catch(() => { if (active) setApiConnected(false); });
+    return () => { active = false; };
+  }, []);
   useEffect(() => {
     if (query.trim().length < 2) { setHits([]); return; }
     const timer = setTimeout(() => api<SearchHit[]>(`/search?q=${encodeURIComponent(query)}`).then(setHits).catch(() => setHits([])), 180);
@@ -34,9 +43,9 @@ export function AppShell() {
   const nav = (items: typeof navigation) => items.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><Icon size={17} /><span>{label}</span></NavLink>);
   return <div className="app-shell">
     <aside className={mobileOpen ? 'sidebar open' : 'sidebar'}>
-      <div className="brand"><div className="brand-mark"><span /><span /><span /></div><div><strong>AxiomEval</strong><small>Evaluation control plane</small></div><button className="mobile-close" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X /></button></div>
+      <div className="brand"><div className="brand-mark"><span /><span /><span /></div><div><strong>sentinel_deepeval</strong><small>Evaluation control plane</small></div><button className="mobile-close" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X /></button></div>
       <nav><p className="nav-label">Observe</p>{nav(navigation)}<p className="nav-label nav-label-spaced">System</p>{nav(secondary)}</nav>
-      <div className="sidebar-foot"><div className="signal-dot" /><div><strong>Local environment</strong><small>API on :8000</small></div></div>
+      <div className="sidebar-foot"><div className={`signal-dot ${apiConnected === null ? 'pending' : apiConnected ? '' : 'offline'}`} /><div><strong>{environmentName}</strong><small>{environmentDetail}</small></div></div>
     </aside>
     {mobileOpen && <button className="scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}
     <div className="workspace">

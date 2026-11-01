@@ -1,1 +1,1 @@
-"""AxiomEval backend package."""
+"""sentinel_deepeval backend package."""

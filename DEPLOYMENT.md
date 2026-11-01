@@ -1,6 +1,6 @@
 # Production deployment
 
-AxiomEval deploys as a Vite SPA on Vercel, a FastAPI web service plus RQ worker on Render, a private Render Key Value instance, and PostgreSQL on Supabase.
+sentinel_deepeval deploys as a Vite SPA on Vercel, a FastAPI web service plus RQ worker on Render, a private Render Key Value instance, and PostgreSQL on Supabase.
 
 ## 1. Supabase
 

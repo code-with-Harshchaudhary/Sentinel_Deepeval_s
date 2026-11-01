@@ -12,7 +12,7 @@ def escape_alembic_url(database_url: str) -> str:
 
 
 class Settings(BaseSettings):
-    app_name: str = "AxiomEval"
+    app_name: str = "sentinel_deepeval"
     api_prefix: str = "/api"
     environment: Literal["development", "test", "production"] = "development"
     database_url: str = Field(

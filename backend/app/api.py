@@ -57,7 +57,7 @@ def _dataset_or_404(db: Session, dataset_id: int) -> Dataset:
 
 @router.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "service": "axiomeval-api"}
+    return {"status": "ok", "service": "sentinel_deepeval-api"}
 
 
 @router.get("/dashboard")

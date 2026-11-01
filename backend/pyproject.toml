@@ -1,7 +1,7 @@
 [project]
 name = "axiomeval-server"
 version = "0.1.0"
-description = "AxiomEval API and evaluation orchestration service"
+description = "sentinel_deepeval API and evaluation orchestration service"
 requires-python = ">=3.11"
 dependencies = [
   "alembic>=1.14,<2",
